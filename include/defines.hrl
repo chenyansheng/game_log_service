@@ -12,6 +12,7 @@
 -define(N2S(N), erlang:integer_to_list(N)).
 -define(S2N(S), erlang:list_to_integer(S)).
 -define(A2S(A), erlang:atom_to_list(A)).
+-define(S2A(S), erlang:list_to_atom(S)).
 -define(U2B(Text), (Text)).
 
 %% 打印日志

@@ -30,6 +30,7 @@ start_link(ServerName, AgentId, ServerId, Ip, DbPort, DbUser, DbPwd, DbName) ->
 get_state(ServerRef) ->
     call(ServerRef, get_state).
 
+
 %%--------------------
 %% callback fun
 %%--------------------
@@ -70,6 +71,7 @@ terminate(_Reason, _State) ->
 code_change(_Old, State, _Extra) ->
     {ok, State}.
 
+
 %%----------------------
 %% private fun
 %%----------------------
@@ -79,5 +81,5 @@ call(ServerRef, Req) ->
 
 %% 启动worker定时器
 start_worker_timer() ->
-    erlang:send_after(?WORKER_TIMER, self(), 'do_loop'),
+    %erlang:send_after(?WORKER_TIMER, self(), 'do_loop'),
     ok.

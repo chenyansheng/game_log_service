@@ -23,7 +23,13 @@ start_link(_Args) ->
          {db_user, DbUser},
          {db_pwd, DbPwd},
          {db_name, DbName}] = OneServer,
-         
+
+        DbPoolId = ?S2A("mysql_pool_" ++ ?A2S(ServerName)),
+        DbChild = {DbPoolId, {db_mysql, start_link, 
+            [DbPoolId, Ip, DbPort, DbUser, DbPwd, DbName]},
+            permanent, 2000, worker,[db_mysql]},
+        ok = util:start_child(Sup, DbChild),
+
         Child = {ServerName, {serv_game_log, start_link, 
             [ServerName, AgentId, ServerId, Ip, DbPort, DbUser, DbPwd, DbName]},
             permanent, 2000, worker,[serv_game_log]},
