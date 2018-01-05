@@ -25,4 +25,7 @@
 -define(P(D),  io:format(?U2B("[INFO] L~p: "++D++"\n"), [?LINE])).
 -define(P(F, D), io:format(?U2B("[INFO] L~p: "++F++"\n"), [?LINE|D])).
 
+%% db操作超时(30s)
+-define(DB_EXECUTE_TIMEOUT, 30000).
+
 -endif.

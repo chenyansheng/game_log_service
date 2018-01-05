@@ -8,23 +8,23 @@
 
 -include("defines.hrl").
 
--export([start_link/8, get_state/1]).
+-export([start_link/9, get_state/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
 %% state
--record(state, {server_name, agent_id, server_id, ip, db_port, db_user, db_pwd, db_name}).
+-record(state, {server_name, mysql_pool_id, agent_id, server_id, ip, db_port, db_user, db_pwd, db_name}).
 
 %% 5min定时器
--define(WORKER_TIMER, 3000).
+-define(WORKER_TIMER, 10000).
 
 %%-------------------
 %% public fun
 %%-------------------
 %% @doc 启动
-start_link(ServerName, AgentId, ServerId, Ip, DbPort, DbUser, DbPwd, DbName) ->
+start_link(ServerName, DbPoolId, AgentId, ServerId, Ip, DbPort, DbUser, DbPwd, DbName) ->
     gen_server:start_link({local, ServerName}, ?MODULE, 
-        [ServerName, AgentId, ServerId, Ip, DbPort, DbUser, DbPwd, DbName], []).
+        [ServerName, DbPoolId, AgentId, ServerId, Ip, DbPort, DbUser, DbPwd, DbName], []).
 
 %% @doc 获取状态
 get_state(ServerRef) ->
@@ -34,9 +34,10 @@ get_state(ServerRef) ->
 %%--------------------
 %% callback fun
 %%--------------------
-init([ServerName, AgentId, ServerId, Ip, DbPort, DbUser, DbPwd, DbName] = _Args) ->
+init([ServerName, DbPoolId, AgentId, ServerId, Ip, DbPort, DbUser, DbPwd, DbName] = _Args) ->
     erlang:process_flag(trap_exit, true),
     State = #state{server_name = ServerName,
+                   mysql_pool_id = DbPoolId,
                    agent_id = AgentId,
                    server_id = ServerId,
                    ip = Ip,
@@ -44,7 +45,7 @@ init([ServerName, AgentId, ServerId, Ip, DbPort, DbUser, DbPwd, DbName] = _Args)
                    db_user = DbUser,
                    db_pwd = DbPwd,
                    db_name = DbName},
-    start_worker_timer(),
+    start_worker_timer(State),
     {ok, State}.
 
 handle_call(get_state, _From, State) ->
@@ -58,8 +59,8 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 handle_info('do_loop', State) ->
-    ?P("do_loop: ~p", [State]),
-    start_worker_timer();
+    % ?P("do_loop: ~p", [State]),
+    start_worker_timer(State);
 
 handle_info(_Info, State) ->
     ?ERROR("unknown info: ~p", [_Info]),
@@ -80,6 +81,12 @@ call(ServerRef, Req) ->
     gen_server:call(ServerRef, Req, 5000).
 
 %% 启动worker定时器
-start_worker_timer() ->
-    %erlang:send_after(?WORKER_TIMER, self(), 'do_loop'),
+start_worker_timer(State) ->
+    do_select(State),
+    erlang:send_after(?WORKER_TIMER, self(), 'do_loop'),
     ok.
+
+
+do_select(#state{mysql_pool_id = DbPoolId}) ->
+    R = (db_function:new(DbPoolId)):select("db_version", "*"),
+    ?P("~p", [R]).

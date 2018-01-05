@@ -16,6 +16,7 @@ start_link(_Args) ->
     SyncServer = get_sync_server(),
     [begin
         [{server_name, ServerName},
+         {mysql_pool_id, DbPoolId},
          {agent_id, AgentId},
          {server_id, ServerId},
          {ip, Ip},
@@ -24,14 +25,13 @@ start_link(_Args) ->
          {db_pwd, DbPwd},
          {db_name, DbName}] = OneServer,
 
-        DbPoolId = ?S2A("mysql_pool_" ++ ?A2S(ServerName)),
         DbChild = {DbPoolId, {db_mysql, start_link, 
             [DbPoolId, Ip, DbPort, DbUser, DbPwd, DbName]},
             permanent, 2000, worker,[db_mysql]},
         ok = util:start_child(Sup, DbChild),
 
         Child = {ServerName, {serv_game_log, start_link, 
-            [ServerName, AgentId, ServerId, Ip, DbPort, DbUser, DbPwd, DbName]},
+            [ServerName, DbPoolId, AgentId, ServerId, Ip, DbPort, DbUser, DbPwd, DbName]},
             permanent, 2000, worker,[serv_game_log]},
         ok = util:start_child(Sup, Child)
     end || OneServer <- SyncServer],
