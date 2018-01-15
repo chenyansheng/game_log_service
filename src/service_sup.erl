@@ -23,7 +23,8 @@ start_link(_Args) ->
          {db_port, DbPort},
          {db_user, DbUser},
          {db_pwd, DbPwd},
-         {db_name, DbName}] = OneServer,
+         {db_name, DbName},
+         {sync_tab, SyncTab}] = OneServer,
 
         DbChild = {DbPoolId, {db_mysql, start_link, 
             [DbPoolId, Ip, DbPort, DbUser, DbPwd, DbName]},
@@ -31,7 +32,7 @@ start_link(_Args) ->
         ok = util:start_child(Sup, DbChild),
 
         Child = {ServerName, {serv_game_log, start_link, 
-            [ServerName, DbPoolId, AgentId, ServerId, Ip, DbPort, DbUser, DbPwd, DbName]},
+            [ServerName, DbPoolId, AgentId, ServerId, Ip, DbPort, DbUser, DbPwd, DbName, SyncTab]},
             permanent, 2000, worker,[serv_game_log]},
         ok = util:start_child(Sup, Child)
     end || OneServer <- SyncServer],

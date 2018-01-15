@@ -13,4 +13,4 @@ apps:
 
 clean:
 	@echo "clean..."
-	(rm -rf ebin/*; rm -rf *.dump; rm -rf log/*.log)
+	(rm -rf ebin/*; rm -rf *.dump; rm -rf log/*.log; rm -rf game_log)
