@@ -25,7 +25,7 @@
                 sync_tab}).
 
 %% 5min定时器
--define(WORKER_TIMER, 10000).
+-define(WORKER_TIMER, 300000).
 
 %%-------------------
 %% public fun
@@ -98,8 +98,11 @@ start_worker_timer(State) ->
 
 %% 查询数据
 dumper_worker(#state{mysql_pool_id = DbPoolId, sync_tab = SyncTab}) ->
+    StartTime = util:now_sec() - ?WORKER_TIMER / 1000,
+    EndTime = util:now_sec(),
+    Where = "m_time >=" ++ ?N2S(StartTime) ++ " AND m_time <" ++ ?N2S(EndTime),
     [begin
-        {selected, _, Data} = (db_function:new(DbPoolId)):select(OneTab, "*"),
+        {selected, _, Data} = (db_function:new(DbPoolId)):select(OneTab, "*", Where),
         [write_log(OneTab, Elem) || Elem <- Data]
     end || OneTab <- SyncTab].
 

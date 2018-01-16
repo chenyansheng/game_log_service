@@ -57,7 +57,7 @@ select(Table, Fields, Where, GroupBy, Limit)
         end
     end
     ],
-    ?P("sql is: ~s", [iolist_to_binary(Sql)]),
+    % ?P("sql is: ~s", [iolist_to_binary(Sql)]),
     fetch(Sql).
 
 

@@ -10,6 +10,7 @@
 -export([get_current_dir/0, get_config_file/0, get_game_log_dir/0]).
 -export([any_to_iodata/1]).
 -export([start_child/2]).
+-export([now_sec/0]).
 
 %% @doc 获取当前目录
 get_current_dir() ->
@@ -52,3 +53,8 @@ start_child(Sup, Child) ->
             io:format("supervisor start child faild: ~p", [Other]),
             throw(Other)
     end.
+
+%% @doc 当前时间(sec)
+now_sec() ->
+    {A, B, _C} = erlang:now(),
+    A * 1000000 + B.
